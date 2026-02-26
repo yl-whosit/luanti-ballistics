@@ -168,9 +168,6 @@ function ballistics.on_step(self, dtime)
 		return
 	end
 
-	local velocity = obj:get_velocity()
-	local acceleration = obj:get_acceleration()
-
 	self._lifetime = (self._lifetime or 0) + dtime
 
 	local done = false -- whether to stop processing early
@@ -198,8 +195,12 @@ function ballistics.on_step(self, dtime)
 
 	self._last_lifetime = self._lifetime
 	self._last_pos = pos
-	self._last_velocity = velocity
-	self._last_acceleration = acceleration
+
+	-- We must store the values the engine will be using between
+	-- current on_step() call and the next one, means *updated*
+	-- values after drag application.
+	self._last_velocity = obj:get_velocity()
+	self._last_acceleration = obj:get_acceleration()
 end
 
 function ballistics.freeze(self)

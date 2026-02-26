@@ -62,20 +62,26 @@ function ballistics.ballistic_path(def)
 	]]
 	local pos = assert(def.pos, "must specify a starting position")
 	local velocity = assert(def.velocity, "must specify a starting velocity")
-	local base_acceleration = def.acceleration or acceleration_due_to_gravity
-	local drag = def.drag or 0
+	local acceleration = def.acceleration or acceleration_due_to_gravity
+	-- local drag = def.drag or 0 -- unused, assume no drag to match engine path
 	local stop_after = def.stop_after or 10
 	local dt = def.dt or 0.01
 	local on_step = def.on_step
 
-	local function get_acceleration(pos2, velocity2)
-		local node = minetest.get_node(pos2:round())
-		local rho = ballistics.get_density(node.name)
-		local drag_acc = -velocity2:normalize() * 0.5 * rho * drag * velocity2:dot(velocity2)
-		return drag_acc + base_acceleration
-	end
+	-- -- There is no point calculating drag here, since
+	-- -- server/client will not even know about drag and will not
+	-- -- use it for position updates or prediction. Therefore, to
+	-- -- match engine position updates, we must assume constant
+	-- -- accelecation (acceleration set on previous step) during
+	-- -- server steps.
+	-- local function get_acceleration(pos2, velocity2)
+	-- 	local node = minetest.get_node(pos2:round())
+	-- 	local rho = ballistics.get_density(node.name)
+	-- 	local drag_acc = -velocity2:normalize() * 0.5 * rho * drag * velocity2:dot(velocity2)
+	-- 	return drag_acc + base_acceleration
+	-- end
 
-	local acceleration = get_acceleration(pos, velocity)
+	--local acceleration = get_acceleration(pos, velocity)
 
 	local t = 0
 
@@ -93,7 +99,6 @@ function ballistics.ballistic_path(def)
 		t = t + dt
 		pos = next_pos
 		velocity = velocity + acceleration * dt
-		acceleration = get_acceleration(pos, velocity)
 		return next_pos
 	end
 end
